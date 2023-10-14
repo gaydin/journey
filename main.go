@@ -14,7 +14,6 @@ import (
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/flags"
 	"github.com/gaydin/journey/https"
-	"github.com/gaydin/journey/plugins"
 	"github.com/gaydin/journey/server"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/templates"
@@ -60,13 +59,6 @@ func main() {
 	if err = templates.Generate(); err != nil {
 		log.Fatal("Error: Couldn't compile templates:", err)
 		return
-	}
-
-	// Plugins
-	if err = plugins.Load(); err == nil {
-		// Close LuaPool at the end
-		defer plugins.LuaPool.Shutdown()
-		log.Println("Plugins loaded.")
 	}
 
 	// HTTP(S) Server

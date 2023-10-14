@@ -10,7 +10,6 @@ import (
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/helpers"
-	"github.com/gaydin/journey/plugins"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )
@@ -52,10 +51,6 @@ func ShowPostTemplate(writer http.ResponseWriter, r *http.Request, slug string) 
 		}
 	}
 	_, err = writer.Write(executeHelper(compiledTemplates.m["post"], &requestData, 1)) // context = post
-	if requestData.PluginVMs != nil {
-		// Put the lua state map back into the pool
-		plugins.LuaPool.Put(requestData.PluginVMs)
-	}
 	return err
 }
 
@@ -82,10 +77,6 @@ func ShowAuthorTemplate(writer http.ResponseWriter, r *http.Request, slug string
 		_, err = writer.Write(executeHelper(template, &requestData, 0)) // context = index
 	} else {
 		_, err = writer.Write(executeHelper(compiledTemplates.m["index"], &requestData, 0)) // context = index
-	}
-	if requestData.PluginVMs != nil {
-		// Put the lua state map back into the pool
-		plugins.LuaPool.Put(requestData.PluginVMs)
 	}
 	return err
 }
@@ -114,10 +105,6 @@ func ShowTagTemplate(writer http.ResponseWriter, r *http.Request, slug string, p
 	} else {
 		_, err = writer.Write(executeHelper(compiledTemplates.m["index"], &requestData, 0)) // context = index
 	}
-	if requestData.PluginVMs != nil {
-		// Put the lua state map back into the pool
-		plugins.LuaPool.Put(requestData.PluginVMs)
-	}
 	return err
 }
 
@@ -137,10 +124,6 @@ func ShowIndexTemplate(w http.ResponseWriter, r *http.Request, page int) error {
 	}
 	requestData := structure.RequestData{Posts: posts, Blog: methods.Blog, CurrentIndexPage: page, CurrentTemplate: 0, CurrentPath: r.URL.Path} // CurrentTemplate = index
 	_, err = w.Write(executeHelper(compiledTemplates.m["index"], &requestData, 0))                                                              // context = index
-	if requestData.PluginVMs != nil {
-		// Put the lua state map back into the pool
-		plugins.LuaPool.Put(requestData.PluginVMs)
-	}
 	return err
 }
 

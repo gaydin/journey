@@ -14,7 +14,6 @@ import (
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/flags"
 	"github.com/gaydin/journey/helpers"
-	"github.com/gaydin/journey/plugins"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/watcher"
@@ -305,7 +304,7 @@ func Generate() error {
 		}
 		currentThemePath := filepath.Join(filenames.ThemesFilepath, *activeTheme)
 		// Create watcher
-		err = watcher.Watch([]string{currentThemePath, filenames.PluginsFilepath}, map[string]func() error{".hbs": Generate, ".lua": plugins.Load})
+		err = watcher.Watch([]string{currentThemePath, filenames.PluginsFilepath}, map[string]func() error{".hbs": Generate})
 		if err != nil {
 			return err
 		}

@@ -11,31 +11,12 @@ import (
 	"github.com/gaydin/journey/conversion"
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
-	"github.com/gaydin/journey/plugins"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )
 
 // Helper fuctions
 func nullFunc(helper *structure.Helper, values *structure.RequestData) []byte {
-	// Check if the helper was defined in a plugin
-	if plugins.LuaPool != nil {
-		// Get a state map to execute and attach it to the request data
-		if values.PluginVMs == nil {
-			values.PluginVMs = plugins.LuaPool.Get(helper, values)
-		}
-		if values.PluginVMs[helper.Name] != nil {
-			pluginResult, err := plugins.Execute(helper, values)
-			if err != nil {
-				return []byte{}
-			}
-			return evaluateEscape(pluginResult, helper.Unescaped)
-		} else {
-			// This helper is not implemented in a plugin. Get rid of the Lua VMs
-			plugins.LuaPool.Put(values.PluginVMs)
-			values.PluginVMs = nil
-		}
-	}
 	log.Println("Warning: This helper is not implemented:", helper.Name)
 	return []byte{}
 }
