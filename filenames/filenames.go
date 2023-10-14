@@ -20,7 +20,6 @@ var (
 	DatabaseFilename = filepath.Join(ContentFilepath, "data", "journey.db")
 	ThemesFilepath   = filepath.Join(ContentFilepath, "themes")
 	ImagesFilepath   = filepath.Join(ContentFilepath, "images")
-	PluginsFilepath  = filepath.Join(ContentFilepath, "plugins")
 	PagesFilepath    = filepath.Join(ContentFilepath, "pages")
 
 	// For https
@@ -48,7 +47,7 @@ func init() {
 }
 
 func createDirectories() error {
-	paths := []string{DatabaseFilepath, ThemesFilepath, ImagesFilepath, HttpsFilepath, PluginsFilepath, PagesFilepath}
+	paths := []string{DatabaseFilepath, ThemesFilepath, ImagesFilepath, HttpsFilepath, PagesFilepath}
 	for _, path := range paths {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			log.Println("Creating " + path)

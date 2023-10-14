@@ -304,7 +304,7 @@ func Generate() error {
 		}
 		currentThemePath := filepath.Join(filenames.ThemesFilepath, *activeTheme)
 		// Create watcher
-		err = watcher.Watch([]string{currentThemePath, filenames.PluginsFilepath}, map[string]func() error{".hbs": Generate})
+		err = watcher.Watch([]string{currentThemePath}, map[string]func() error{".hbs": Generate})
 		if err != nil {
 			return err
 		}

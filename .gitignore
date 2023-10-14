@@ -30,10 +30,6 @@ content/themes/*
 content/https/*
 !content/https/README.md
 
-# Plugins
-content/plugins/*
-!content/plugins/README.md
-
 # Pages
 content/pages/*
 !content/pages/README.md
