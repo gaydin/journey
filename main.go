@@ -81,36 +81,9 @@ func main() {
 		components := strings.SplitAfterN(httpsPort, ":", 2)
 		httpsPort = components[0] + flags.HttpsPort
 	}
+
 	// Determine the kind of https support (as set in the config.json)
-	switch configuration.Config.HttpsUsage {
-	case "AdminOnly":
-		httpRouter := httptreemux.New()
-		httpsRouter := httptreemux.New()
-		// Blog and pages as http
-		server.InitializeBlog(httpRouter)
-		server.InitializePages(httpRouter)
-		// Blog and pages as https
-		server.InitializeBlog(httpsRouter)
-		server.InitializePages(httpsRouter)
-		// Admin as https and http redirect
-		// Add redirection to http router
-		httpRouter.GET("/admin/", httpsRedirect)
-		httpRouter.GET("/admin/*path", httpsRedirect)
-		// Add routes to https router
-		server.InitializeAdmin(httpsRouter)
-		// Start https server
-		log.Println("Starting https server on port " + httpsPort + "...")
-		go func() {
-			if err := https.StartServer(httpsPort, httpsRouter); err != nil {
-				log.Fatal("Error: Couldn't start the HTTPS server:", err)
-			}
-		}()
-		// Start http server
-		log.Println("Starting http server on port " + httpPort + "...")
-		if err := http.ListenAndServe(httpPort, httpRouter); err != nil {
-			log.Fatal("Error: Couldn't start the HTTP server:", err)
-		}
-	case "All":
+	if configuration.Config.HttpsUsage {
 		httpsRouter := httptreemux.New()
 		httpRouter := httptreemux.New()
 		// Blog and pages as https
@@ -133,7 +106,7 @@ func main() {
 		if err := http.ListenAndServe(httpPort, httpRouter); err != nil {
 			log.Fatal("Error: Couldn't start the HTTP server:", err)
 		}
-	default: // This is configuration.HttpsUsage == "None"
+	} else {
 		httpRouter := httptreemux.New()
 		// Blog and pages as http
 		server.InitializeBlog(httpRouter)
