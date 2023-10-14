@@ -6,15 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kardianos/osext"
-
 	"github.com/gaydin/journey/flags"
 )
 
 var (
-	// Determine the path the Journey executable is in - needed to load relative assets
-	ExecutablePath = determineExecutablePath()
-
 	// Determine the path to the assets folder (default: Journey root folder)
 	AssetPath = determineAssetPath()
 
@@ -33,15 +28,15 @@ var (
 	HttpsCertFilename = filepath.Join(ContentFilepath, "https", "cert.pem")
 	HttpsKeyFilename  = filepath.Join(ContentFilepath, "https", "key.pem")
 
-	//For built-in files (e.g. the admin interface)
-	AdminFilepath  = filepath.Join(ExecutablePath, "built-in", "admin")
-	PublicFilepath = filepath.Join(ExecutablePath, "built-in", "public")
-	HbsFilepath    = filepath.Join(ExecutablePath, "built-in", "hbs")
+	// For built-in files (e.g. the admin interface)
+	AdminFilepath  = filepath.Join("built-in", "admin")
+	PublicFilepath = filepath.Join("built-in", "public")
+	HbsFilepath    = filepath.Join("built-in", "hbs")
 
 	// For blog  (this is a url string)
 	// TODO: This is not used at the moment because it is still hard-coded into the create database string
-	DefaultBlogLogoFilename  = "/public/images/blog-logo.jpg"
-	DefaultBlogCoverFilename = "/public/images/blog-cover.jpg"
+	//DefaultBlogLogoFilename  = "/public/images/blog-logo.jpg"
+	//DefaultBlogCoverFilename = "/public/images/blog-cover.jpg"
 
 	// For users (this is a url string)
 	DefaultUserImageFilename = "/public/images/user-image.jpg"
@@ -86,14 +81,6 @@ func determineAssetPath() string {
 		}
 		return contentPath
 	}
-	return determineExecutablePath()
-}
 
-func determineExecutablePath() string {
-	// Get the path this executable is located in
-	executablePath, err := osext.ExecutableFolder()
-	if err != nil {
-		log.Fatal("Error: Couldn't determine what directory this executable is in:", err)
-	}
-	return executablePath
+	return ""
 }
