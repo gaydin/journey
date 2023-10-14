@@ -1,19 +1,17 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"os"
-	"runtime"
 	"strings"
 
 	"github.com/dimfeld/httptreemux/v5"
+	"log/slog"
 
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/database"
-	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/flags"
 	"github.com/gaydin/journey/https"
+	"github.com/gaydin/journey/logger"
 	"github.com/gaydin/journey/server"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/templates"
@@ -25,39 +23,31 @@ func httpsRedirect(w http.ResponseWriter, r *http.Request, _ map[string]string) 
 }
 
 func main() {
-	// Setup
-	var err error
-
-	// GOMAXPROCS - Maybe not needed
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	// Write log to file if the log flag was provided
-	if flags.Log != "" {
-		logFile, err := os.OpenFile(flags.Log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatal("Error: Couldn't open log file: " + err.Error())
-		}
-		defer logFile.Close()
-		log.SetOutput(logFile)
-	}
-
 	// Configuration is read from config.json by loading the configuration package
+	config := configuration.NewConfiguration()
+
+	log, closeLogFunc := logger.New(config)
+	defer func() {
+		if err := closeLogFunc(); err != nil {
+			slog.Default().Error("close log file error", logger.Error(err))
+		}
+	}()
 
 	// Database
-	if err = database.Initialize(); err != nil {
-		log.Fatal("Error: Couldn't initialize database:", err)
+	if err := database.Initialize(); err != nil {
+		log.Error("Couldn't initialize database", logger.Error(err))
 		return
 	}
 
 	// Global blog data
-	if err = methods.GenerateBlog(); err != nil {
-		log.Fatal("Error: Couldn't generate blog data:", err)
+	if err := methods.GenerateBlog(); err != nil {
+		log.Error("Couldn't generate blog data", logger.Error(err))
 		return
 	}
 
 	// Templates
-	if err = templates.Generate(); err != nil {
-		log.Fatal("Error: Couldn't compile templates:", err)
+	if err := templates.Generate(); err != nil {
+		log.Error("Couldn't compile templates", logger.Error(err))
 		return
 	}
 
@@ -85,16 +75,17 @@ func main() {
 		httpRouter.GET("/", httpsRedirect)
 		httpRouter.GET("/*path", httpsRedirect)
 		// Start https server
-		log.Println("Starting https server on port " + httpsPort + "...")
+		log.Info("Starting https server on port " + httpsPort + "...")
 		go func() {
 			if err := https.StartServer(httpsPort, httpsRouter); err != nil {
-				log.Fatal("Error: Couldn't start the HTTPS server:", err)
+				log.Error("Couldn't start the HTTPS server", logger.Error(err))
+				return
 			}
 		}()
 		// Start http server
-		log.Println("Starting http server on port " + httpPort + "...")
-		if err := http.ListenAndServe(httpPort, httpRouter); err != nil {
-			log.Fatal("Error: Couldn't start the HTTP server:", err)
+		log.Info("Starting http server on port " + httpPort + "...")
+		if err := http.ListenAndServe(httpPort, logger.Middleware(httpRouter, log)); err != nil {
+			log.Error("Couldn't start the HTTP server:", logger.Error(err))
 		}
 	} else {
 		httpRouter := httptreemux.New()
@@ -102,10 +93,9 @@ func main() {
 		server.InitializeBlog(httpRouter)
 		server.InitializePages(httpRouter)
 		// Start http server
-		log.Println("Starting server without HTTPS support. Please enable HTTPS in " + filenames.ConfigFilename + " to improve security.")
-		log.Println("Starting http server on port " + httpPort + "...")
-		if err := http.ListenAndServe(httpPort, httpRouter); err != nil {
-			log.Fatal("Error: Couldn't start the HTTP server:", err)
+		log.Info("Starting http server on port " + httpPort + "...")
+		if err := http.ListenAndServe(httpPort, logger.Middleware(httpRouter, log)); err != nil {
+			log.Error("Couldn't start the HTTP server:", logger.Error(err))
 		}
 	}
 }

@@ -19,6 +19,13 @@ type Configuration struct {
 	Url              string
 	HttpsUrl         string
 	UseLetsEncrypt   bool
+
+	Logger Logger `json:"logger"`
+}
+
+type Logger struct {
+	JSON     bool   `json:"json"`
+	FileName string `json:"file_name"`
 }
 
 func NewConfiguration() *Configuration {

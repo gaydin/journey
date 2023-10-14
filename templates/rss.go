@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"net/http"
 
-	"github.com/gaydin/journey/feeds"
-
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
+	"github.com/gaydin/journey/feeds"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )

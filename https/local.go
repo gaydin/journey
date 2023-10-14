@@ -3,10 +3,9 @@ package https
 import (
 	"log"
 
-	"github.com/gaydin/journey/httpscerts"
-
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/filenames"
+	"github.com/gaydin/journey/httpscerts"
 )
 
 func checkCertificates() {
