@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"net/http"
 
-	"github.com/kabukky/feeds"
+	"github.com/gaydin/journey/feeds"
 
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"

@@ -3,7 +3,7 @@ package https
 import (
 	"log"
 
-	"github.com/kabukky/httpscerts"
+	"github.com/gaydin/journey/httpscerts"
 
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/filenames"

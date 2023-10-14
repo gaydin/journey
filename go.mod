@@ -5,8 +5,6 @@ go 1.21.3
 require (
 	github.com/dimfeld/httptreemux v5.0.1+incompatible
 	github.com/gorilla/securecookie v1.1.1
-	github.com/kabukky/feeds v0.0.0-20151110114325-c7025aca4568
-	github.com/kabukky/httpscerts v0.0.0-20150320125433-617593d7dcb3
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/russross/blackfriday v1.6.0
 	github.com/satori/go.uuid v1.2.0
