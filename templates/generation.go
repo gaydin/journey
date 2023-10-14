@@ -12,11 +12,9 @@ import (
 
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
-	"github.com/gaydin/journey/flags"
 	"github.com/gaydin/journey/helpers"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
-	"github.com/gaydin/journey/watcher"
 )
 
 // For parsing of the theme files
@@ -293,21 +291,6 @@ func Generate() error {
 	err := checkThemes()
 	if err != nil {
 		return err
-	}
-	// If the dev flag is set, watch the theme directory and the plugin directoy for changes
-	// TODO: It seems unclean to do the watching of the plugins in the templates package. Move this somewhere else.
-	if flags.IsInDevMode {
-		// Get the currently used theme path
-		activeTheme, err := database.RetrieveActiveTheme()
-		if err != nil {
-			return err
-		}
-		currentThemePath := filepath.Join(filenames.ThemesFilepath, *activeTheme)
-		// Create watcher
-		err = watcher.Watch([]string{currentThemePath}, map[string]func() error{".hbs": Generate})
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
