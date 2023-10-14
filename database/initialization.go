@@ -3,13 +3,14 @@ package database
 import (
 	"database/sql"
 
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/satori/go.uuid"
+
 	"github.com/gaydin/journey/database/migration"
 	"github.com/gaydin/journey/date"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/helpers"
 	"github.com/gaydin/journey/structure"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/satori/go.uuid"
 )
 
 // Handler for read access

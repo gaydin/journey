@@ -1,10 +1,11 @@
 package methods
 
 import (
+	"log"
+
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
 	"github.com/gaydin/journey/structure"
-	"log"
 )
 
 func SavePost(p *structure.Post) error {

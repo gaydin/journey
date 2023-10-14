@@ -2,12 +2,13 @@ package methods
 
 import (
 	"encoding/json"
+	"log"
+
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
 	"github.com/gaydin/journey/slug"
 	"github.com/gaydin/journey/structure"
-	"log"
 )
 
 // Global blog - thread safe and accessible by all requests

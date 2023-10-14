@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/dimfeld/httptreemux"
+
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"

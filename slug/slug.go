@@ -1,11 +1,12 @@
 package slug
 
 import (
-	"github.com/gaydin/journey/database"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/gaydin/journey/database"
 )
 
 func Generate(input string, table string) string {

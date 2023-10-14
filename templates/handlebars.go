@@ -2,17 +2,18 @@ package templates
 
 import (
 	"bytes"
+	"html"
+	"log"
+	"net/url"
+	"strconv"
+	"strings"
+
 	"github.com/gaydin/journey/conversion"
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
 	"github.com/gaydin/journey/plugins"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
-	"html"
-	"log"
-	"net/url"
-	"strconv"
-	"strings"
 )
 
 // Helper fuctions

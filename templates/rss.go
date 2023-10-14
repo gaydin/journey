@@ -2,12 +2,14 @@ package templates
 
 import (
 	"bytes"
+	"net/http"
+
+	"github.com/kabukky/feeds"
+
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
-	"github.com/kabukky/feeds"
-	"net/http"
 )
 
 func ShowIndexRss(writer http.ResponseWriter) error {

@@ -5,8 +5,9 @@ package plugins
 
 import (
 	"errors"
-	"github.com/gaydin/journey/structure"
 	"sync"
+
+	"github.com/gaydin/journey/structure"
 )
 
 // Global LState pool

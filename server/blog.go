@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/dimfeld/httptreemux"
+
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/structure/methods"

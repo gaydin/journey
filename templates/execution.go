@@ -3,15 +3,16 @@ package templates
 import (
 	"bytes"
 	"errors"
+	"net/http"
+	"path/filepath"
+	"sync"
+
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/helpers"
 	"github.com/gaydin/journey/plugins"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
-	"net/http"
-	"path/filepath"
-	"sync"
 )
 
 type Templates struct {

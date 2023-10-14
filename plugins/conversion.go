@@ -4,9 +4,10 @@
 package plugins
 
 import (
+	"github.com/yuin/gopher-lua"
+
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
-	"github.com/yuin/gopher-lua"
 )
 
 func convertArguments(vm *lua.LState, structureArguments []structure.Helper) *lua.LTable {

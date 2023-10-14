@@ -5,12 +5,14 @@ package plugins
 
 import (
 	"errors"
-	"github.com/gaydin/journey/filenames"
-	"github.com/gaydin/journey/structure"
-	"github.com/yuin/gopher-lua"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/yuin/gopher-lua"
+
+	"github.com/gaydin/journey/filenames"
+	"github.com/gaydin/journey/structure"
 )
 
 func Load() error {

@@ -3,6 +3,13 @@ package templates
 import (
 	"bytes"
 	"errors"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
 	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/flags"
@@ -11,12 +18,6 @@ import (
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/watcher"
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strings"
 )
 
 // For parsing of the theme files

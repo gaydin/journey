@@ -4,9 +4,11 @@
 package plugins
 
 import (
-	"github.com/gaydin/journey/structure"
-	"github.com/yuin/gopher-lua"
 	"log"
+
+	"github.com/yuin/gopher-lua"
+
+	"github.com/gaydin/journey/structure"
 )
 
 func Execute(helper *structure.Helper, values *structure.RequestData) ([]byte, error) {

@@ -4,9 +4,11 @@
 package plugins
 
 import (
-	"github.com/gaydin/journey/structure"
-	"github.com/yuin/gopher-lua"
 	"sync"
+
+	"github.com/yuin/gopher-lua"
+
+	"github.com/gaydin/journey/structure"
 )
 
 // Global LState pool

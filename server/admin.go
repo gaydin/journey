@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/dimfeld/httptreemux"
+	"github.com/satori/go.uuid"
+
 	"github.com/gaydin/journey/authentication"
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/conversion"
@@ -22,7 +24,6 @@ import (
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/templates"
-	"github.com/satori/go.uuid"
 )
 
 type JsonPost struct {
