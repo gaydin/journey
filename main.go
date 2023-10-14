@@ -89,8 +89,6 @@ func main() {
 		// Blog and pages as https
 		server.InitializeBlog(httpsRouter)
 		server.InitializePages(httpsRouter)
-		// Admin as https
-		server.InitializeAdmin(httpsRouter)
 		// Add redirection to http router
 		httpRouter.GET("/", httpsRedirect)
 		httpRouter.GET("/*path", httpsRedirect)
@@ -111,8 +109,6 @@ func main() {
 		// Blog and pages as http
 		server.InitializeBlog(httpRouter)
 		server.InitializePages(httpRouter)
-		// Admin as http
-		server.InitializeAdmin(httpRouter)
 		// Start http server
 		log.Println("Starting server without HTTPS support. Please enable HTTPS in " + filenames.ConfigFilename + " to improve security.")
 		log.Println("Starting http server on port " + httpPort + "...")

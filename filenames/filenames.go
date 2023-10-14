@@ -29,7 +29,6 @@ var (
 	HttpsKeyFilename  = filepath.Join(ContentFilepath, "https", "key.pem")
 
 	// For built-in files (e.g. the admin interface)
-	AdminFilepath  = filepath.Join("built-in", "admin")
 	PublicFilepath = filepath.Join("built-in", "public")
 	HbsFilepath    = filepath.Join("built-in", "hbs")
 
@@ -37,10 +36,6 @@ var (
 	// TODO: This is not used at the moment because it is still hard-coded into the create database string
 	//DefaultBlogLogoFilename  = "/public/images/blog-logo.jpg"
 	//DefaultBlogCoverFilename = "/public/images/blog-cover.jpg"
-
-	// For users (this is a url string)
-	DefaultUserImageFilename = "/public/images/user-image.jpg"
-	DefaultUserCoverFilename = "/public/images/user-cover.jpg"
 )
 
 func init() {
