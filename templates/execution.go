@@ -2,14 +2,15 @@ package templates
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"net/http"
 	"path/filepath"
 	"sync"
 
-	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/helpers"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )
@@ -24,13 +25,13 @@ func newTemplates() *Templates { return &Templates{m: make(map[string]*structure
 // Global compiled templates - thread safe and accessible by all requests
 var compiledTemplates = newTemplates()
 
-func ShowPostTemplate(writer http.ResponseWriter, r *http.Request, slug string) error {
+func ShowPostTemplate(ctx context.Context, db store.Database, writer http.ResponseWriter, r *http.Request, slug string) error {
 	// Read lock templates and global blog
 	compiledTemplates.RLock()
 	defer compiledTemplates.RUnlock()
 	methods.Blog.RLock()
 	defer methods.Blog.RUnlock()
-	post, err := database.RetrievePostBySlug(slug)
+	post, err := db.RetrievePostBySlug(ctx, slug)
 	if err != nil {
 		return err
 	} else if !post.IsPublished { // Make sure the post is published before rendering it
@@ -54,7 +55,7 @@ func ShowPostTemplate(writer http.ResponseWriter, r *http.Request, slug string) 
 	return err
 }
 
-func ShowAuthorTemplate(writer http.ResponseWriter, r *http.Request, slug string, page int) error {
+func ShowAuthorTemplate(ctx context.Context, db store.Database, writer http.ResponseWriter, r *http.Request, slug string, page int) error {
 	// Read lock templates and global blog
 	compiledTemplates.RLock()
 	defer compiledTemplates.RUnlock()
@@ -64,11 +65,11 @@ func ShowAuthorTemplate(writer http.ResponseWriter, r *http.Request, slug string
 	if postIndex < 0 {
 		postIndex = 0
 	}
-	author, err := database.RetrieveUserBySlug(slug)
+	author, err := db.RetrieveUserBySlug(ctx, slug)
 	if err != nil {
 		return err
 	}
-	posts, err := database.RetrievePostsByUser(author.Id, methods.Blog.PostsPerPage, (methods.Blog.PostsPerPage * postIndex))
+	posts, err := db.RetrievePostsByUser(ctx, author.Id, methods.Blog.PostsPerPage, (methods.Blog.PostsPerPage * postIndex))
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func ShowAuthorTemplate(writer http.ResponseWriter, r *http.Request, slug string
 	return err
 }
 
-func ShowTagTemplate(writer http.ResponseWriter, r *http.Request, slug string, page int) error {
+func ShowTagTemplate(ctx context.Context, db store.Database, writer http.ResponseWriter, r *http.Request, slug string, page int) error {
 	// Read lock templates and global blog
 	compiledTemplates.RLock()
 	defer compiledTemplates.RUnlock()
@@ -91,11 +92,11 @@ func ShowTagTemplate(writer http.ResponseWriter, r *http.Request, slug string, p
 	if postIndex < 0 {
 		postIndex = 0
 	}
-	tag, err := database.RetrieveTagBySlug(slug)
+	tag, err := db.RetrieveTagBySlug(ctx, slug)
 	if err != nil {
 		return err
 	}
-	posts, err := database.RetrievePostsByTag(tag.Id, methods.Blog.PostsPerPage, (methods.Blog.PostsPerPage * postIndex))
+	posts, err := db.RetrievePostsByTag(ctx, tag.Id, methods.Blog.PostsPerPage, (methods.Blog.PostsPerPage * postIndex))
 	if err != nil {
 		return err
 	}
@@ -108,7 +109,7 @@ func ShowTagTemplate(writer http.ResponseWriter, r *http.Request, slug string, p
 	return err
 }
 
-func ShowIndexTemplate(w http.ResponseWriter, r *http.Request, page int) error {
+func ShowIndexTemplate(ctx context.Context, db store.Database, w http.ResponseWriter, r *http.Request, page int) error {
 	// Read lock templates and global blog
 	compiledTemplates.RLock()
 	defer compiledTemplates.RUnlock()
@@ -118,7 +119,7 @@ func ShowIndexTemplate(w http.ResponseWriter, r *http.Request, page int) error {
 	if postIndex < 0 {
 		postIndex = 0
 	}
-	posts, err := database.RetrievePostsForIndex(methods.Blog.PostsPerPage, (methods.Blog.PostsPerPage * postIndex))
+	posts, err := db.RetrievePostsForIndex(ctx, methods.Blog.PostsPerPage, (methods.Blog.PostsPerPage * postIndex))
 	if err != nil {
 		return err
 	}

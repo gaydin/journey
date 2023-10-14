@@ -8,8 +8,8 @@ import (
 
 	"github.com/dimfeld/httptreemux/v5"
 
-	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/templates"
 )
@@ -18,7 +18,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request, params map[string]stri
 	number := params["number"]
 	if number == "" {
 		// Render index template (first page)
-		err := templates.ShowIndexTemplate(w, r, 1)
+		err := templates.ShowIndexTemplate(r.Context(), store.DB, w, r, 1)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -31,7 +31,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request, params map[string]stri
 		return
 	}
 	// Render index template
-	err = templates.ShowIndexTemplate(w, r, page)
+	err = templates.ShowIndexTemplate(r.Context(), store.DB, w, r, page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -45,7 +45,7 @@ func authorHandler(w http.ResponseWriter, r *http.Request, params map[string]str
 	number := params["number"]
 	if function == "" {
 		// Render author template (first page)
-		err := templates.ShowAuthorTemplate(w, r, slug, 1)
+		err := templates.ShowAuthorTemplate(r.Context(), store.DB, w, r, slug, 1)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -53,7 +53,7 @@ func authorHandler(w http.ResponseWriter, r *http.Request, params map[string]str
 		return
 	} else if function == "rss" {
 		// Render author rss feed
-		err := templates.ShowAuthorRss(w, slug)
+		err := templates.ShowAuthorRss(r.Context(), w, slug)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -66,7 +66,7 @@ func authorHandler(w http.ResponseWriter, r *http.Request, params map[string]str
 		return
 	}
 	// Render author template
-	err = templates.ShowAuthorTemplate(w, r, slug, page)
+	err = templates.ShowAuthorTemplate(r.Context(), store.DB, w, r, slug, page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -80,7 +80,7 @@ func tagHandler(w http.ResponseWriter, r *http.Request, params map[string]string
 	number := params["number"]
 	if function == "" {
 		// Render tag template (first page)
-		err := templates.ShowTagTemplate(w, r, slug, 1)
+		err := templates.ShowTagTemplate(r.Context(), store.DB, w, r, slug, 1)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -88,7 +88,7 @@ func tagHandler(w http.ResponseWriter, r *http.Request, params map[string]string
 		return
 	} else if function == "rss" {
 		// Render tag rss feed
-		err := templates.ShowTagRss(w, slug)
+		err := templates.ShowTagRss(r.Context(), w, slug)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -101,7 +101,7 @@ func tagHandler(w http.ResponseWriter, r *http.Request, params map[string]string
 		return
 	}
 	// Render tag template
-	err = templates.ShowTagTemplate(w, r, slug, page)
+	err = templates.ShowTagTemplate(r.Context(), store.DB, w, r, slug, page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -116,7 +116,7 @@ func postHandler(w http.ResponseWriter, r *http.Request, params map[string]strin
 		return
 	} else if slug == "rss" {
 		// Render index rss feed
-		err := templates.ShowIndexRss(w)
+		err := templates.ShowIndexRss(r.Context(), w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -125,7 +125,7 @@ func postHandler(w http.ResponseWriter, r *http.Request, params map[string]strin
 	}
 
 	// Render post template
-	err := templates.ShowPostTemplate(w, r, slug)
+	err := templates.ShowPostTemplate(r.Context(), store.DB, w, r, slug)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -133,22 +133,24 @@ func postHandler(w http.ResponseWriter, r *http.Request, params map[string]strin
 	return
 }
 
-func postEditHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	slug := params["slug"]
+func newPostEditHandler(db store.Database) httptreemux.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+		slug := params["slug"]
+		if slug == "" {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
 
-	if slug == "" {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
-	// Redirect to edit
-	post, err := database.RetrievePostBySlug(slug)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		// Redirect to edit
+		post, err := db.RetrievePostBySlug(r.Context(), slug)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	url := fmt.Sprintf("/admin/#/edit/%d", post.Id)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+		url := fmt.Sprintf("/admin/#/edit/%d", post.Id)
+		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	}
 }
 
 func assetsHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
@@ -169,10 +171,10 @@ func publicHandler(w http.ResponseWriter, r *http.Request, params map[string]str
 	return
 }
 
-func InitializeBlog(router *httptreemux.TreeMux) {
+func InitializeBlog(router *httptreemux.TreeMux, db store.Database) {
 	// For index
 	router.GET("/", indexHandler)
-	router.GET("/:slug/edit", postEditHandler)
+	router.GET("/:slug/edit", newPostEditHandler(db))
 	router.GET("/:slug/", postHandler)
 	router.GET("/page/:number/", indexHandler)
 	// For author

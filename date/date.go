@@ -15,41 +15,41 @@ func GetCurrentTime() time.Time {
 	return time.Now().UTC()
 }
 
-func GenerateTimeAgo(date *time.Time) []byte {
+func GenerateTimeAgo(date *time.Time) string {
 	timeAgo := GetCurrentTime().Sub(*date)
 	if timeAgo.Minutes() < 1 {
-		return []byte("a few seconds ago")
+		return "a few seconds ago"
 	}
 	if timeAgo.Minutes() < 2 {
-		return []byte("a minute ago")
+		return "a minute ago"
 	}
 	if timeAgo.Minutes() < 60 {
 		var buffer bytes.Buffer
 		buffer.WriteString(strconv.Itoa(int(timeAgo.Minutes())))
 		buffer.WriteString(" minutes ago")
-		return buffer.Bytes()
+		return buffer.String()
 	}
 	if timeAgo.Hours() < 2 {
-		return []byte("an hour ago")
+		return "an hour ago"
 	}
 	if timeAgo.Hours() < 24 {
 		var buffer bytes.Buffer
 		buffer.WriteString(strconv.Itoa(int(timeAgo.Hours())))
 		buffer.WriteString(" hours ago")
-		return buffer.Bytes()
+		return buffer.String()
 	}
 	if timeAgo.Hours() < 48 {
-		return []byte("a day ago")
+		return "a day ago"
 	}
 	days := int(timeAgo.Hours() / 24)
 	if days < 25 {
 		var buffer bytes.Buffer
 		buffer.WriteString(strconv.Itoa(days))
 		buffer.WriteString(" days ago")
-		return buffer.Bytes()
+		return buffer.String()
 	}
 	if days < 45 {
-		return []byte("a month ago")
+		return "a month ago"
 	}
 	if days < 345 {
 		months := days / 30
@@ -59,10 +59,10 @@ func GenerateTimeAgo(date *time.Time) []byte {
 		var buffer bytes.Buffer
 		buffer.WriteString(strconv.Itoa(months))
 		buffer.WriteString(" months ago")
-		return buffer.Bytes()
+		return buffer.String()
 	}
 	if days < 548 {
-		return []byte("a year ago")
+		return "a year ago"
 	}
 	years := days / 365
 	if years < 2 {
@@ -71,7 +71,7 @@ func GenerateTimeAgo(date *time.Time) []byte {
 	var buffer bytes.Buffer
 	buffer.WriteString(strconv.Itoa(years))
 	buffer.WriteString(" years ago")
-	return buffer.Bytes()
+	return buffer.String()
 }
 
 func FormatDate(format string, date *time.Time) []byte {

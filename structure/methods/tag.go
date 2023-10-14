@@ -1,9 +1,11 @@
 package methods
 
 import (
+	"context"
 	"strings"
 
 	"github.com/gaydin/journey/slug"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure"
 )
 
@@ -15,7 +17,7 @@ func GenerateTagsFromCommaString(input string) []structure.Tag {
 	}
 	for _, tag := range tags {
 		if tag != "" {
-			output = append(output, structure.Tag{Name: []byte(tag), Slug: slug.Generate(tag, "tags")})
+			output = append(output, structure.Tag{Name: tag, Slug: slug.Generate(context.Background(), store.DB, tag, "tags")})
 		}
 	}
 	return output

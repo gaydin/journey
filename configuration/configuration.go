@@ -20,7 +20,12 @@ type Configuration struct {
 	HttpsUrl         string
 	UseLetsEncrypt   bool
 
-	Logger Logger `json:"logger"`
+	Database Database `json:"database"`
+	Logger   Logger   `json:"logger"`
+}
+
+type Database struct {
+	DSN string `json:"DSN,omitempty"`
 }
 
 type Logger struct {

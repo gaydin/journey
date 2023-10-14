@@ -2,21 +2,22 @@ package templates
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 
-	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
 	"github.com/gaydin/journey/feeds"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )
 
-func ShowIndexRss(writer http.ResponseWriter) error {
+func ShowIndexRss(ctx context.Context, writer http.ResponseWriter) error {
 	// Read lock global blog
 	methods.Blog.RLock()
 	defer methods.Blog.RUnlock()
 	// 15 posts in rss for now
-	posts, err := database.RetrievePostsForIndex(15, 0)
+	posts, err := store.DB.RetrievePostsForIndex(ctx, 15, 0)
 	if err != nil {
 		return err
 	}
@@ -26,16 +27,16 @@ func ShowIndexRss(writer http.ResponseWriter) error {
 	return err
 }
 
-func ShowTagRss(writer http.ResponseWriter, slug string) error {
+func ShowTagRss(ctx context.Context, writer http.ResponseWriter, slug string) error {
 	// Read lock global blog
 	methods.Blog.RLock()
 	defer methods.Blog.RUnlock()
-	tag, err := database.RetrieveTagBySlug(slug)
+	tag, err := store.DB.RetrieveTagBySlug(ctx, slug)
 	if err != nil {
 		return err
 	}
 	// 15 posts in rss for now
-	posts, err := database.RetrievePostsByTag(tag.Id, 15, 0)
+	posts, err := store.DB.RetrievePostsByTag(ctx, tag.Id, 15, 0)
 	if err != nil {
 		return err
 	}
@@ -45,16 +46,16 @@ func ShowTagRss(writer http.ResponseWriter, slug string) error {
 	return err
 }
 
-func ShowAuthorRss(writer http.ResponseWriter, slug string) error {
+func ShowAuthorRss(ctx context.Context, writer http.ResponseWriter, slug string) error {
 	// Read lock global blog
 	methods.Blog.RLock()
 	defer methods.Blog.RUnlock()
-	author, err := database.RetrieveUserBySlug(slug)
+	author, err := store.DB.RetrieveUserBySlug(ctx, slug)
 	if err != nil {
 		return err
 	}
 	// 15 posts in rss for now
-	posts, err := database.RetrievePostsByUser(author.Id, 15, 0)
+	posts, err := store.DB.RetrievePostsByUser(ctx, author.Id, 15, 0)
 	if err != nil {
 		return err
 	}
@@ -82,7 +83,7 @@ func createFeed(values *structure.RequestData) *feeds.Feed {
 		if values.Posts[i].Id != 0 {
 			// Make link
 			var buffer bytes.Buffer
-			buffer.Write(values.Blog.Url)
+			buffer.WriteString(values.Blog.Url)
 			buffer.WriteString("/")
 			buffer.WriteString(values.Posts[i].Slug)
 			item := &feeds.Item{

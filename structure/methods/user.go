@@ -1,25 +1,27 @@
 package methods
 
 import (
-	"github.com/gaydin/journey/database"
+	"context"
+
 	"github.com/gaydin/journey/date"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure"
 )
 
-func SaveUser(u *structure.User, hashedPassword string, createdBy int64) error {
-	userId, err := database.InsertUser(u.Name, u.Slug, hashedPassword, u.Email, u.Image, u.Cover, date.GetCurrentTime(), createdBy)
+func SaveUser(ctx context.Context, db store.Database, u *structure.User, hashedPassword string, createdBy int64) error {
+	userId, err := db.InsertUser(ctx, u.Name, u.Slug, hashedPassword, u.Email, u.Image, u.Cover, date.GetCurrentTime(), createdBy)
 	if err != nil {
 		return err
 	}
-	err = database.InsertRoleUser(u.Role, userId)
+	err = db.InsertRoleUser(ctx, u.Role, userId)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func UpdateUser(u *structure.User, updatedById int64) error {
-	err := database.UpdateUser(u.Id, u.Name, u.Slug, u.Email, u.Image, u.Cover, u.Bio, u.Website, u.Location, date.GetCurrentTime(), updatedById)
+func UpdateUser(ctx context.Context, db store.Database, u *structure.User, updatedById int64) error {
+	err := db.UpdateUser(ctx, u.Id, u.Name, u.Slug, u.Email, u.Image, u.Cover, u.Bio, u.Website, u.Location, date.GetCurrentTime(), updatedById)
 	if err != nil {
 		return err
 	}

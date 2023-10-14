@@ -2,6 +2,7 @@ package templates
 
 import (
 	"bytes"
+	"context"
 	"html"
 	"log"
 	"net/url"
@@ -9,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/gaydin/journey/conversion"
-	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/date"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )
@@ -23,7 +24,7 @@ func nullFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 
 func slugFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	if len(values.Blog.NavigationItems) != 0 {
-		return evaluateEscape([]byte(values.Blog.NavigationItems[values.CurrentNavigationIndex].Slug), helper.Unescaped)
+		return evaluateEscape(values.Blog.NavigationItems[values.CurrentNavigationIndex].Slug, helper.Unescaped)
 	}
 	return []byte{}
 }
@@ -53,7 +54,7 @@ func navigationFunc(helper *structure.Helper, values *structure.RequestData) []b
 
 func labelFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	if len(values.Blog.NavigationItems) != 0 {
-		return evaluateEscape([]byte(values.Blog.NavigationItems[values.CurrentNavigationIndex].Label), helper.Unescaped)
+		return evaluateEscape(values.Blog.NavigationItems[values.CurrentNavigationIndex].Label, helper.Unescaped)
 	}
 	return []byte{}
 }
@@ -93,14 +94,14 @@ func paginationDotTotalFunc(helper *structure.Helper, values *structure.RequestD
 	if values.CurrentTemplate == 0 { // index
 		return []byte(strconv.FormatInt(values.Blog.PostCount, 10))
 	} else if values.CurrentTemplate == 3 { // author
-		count, err := database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		count, err := store.DB.RetrieveNumberOfPostsByUser(context.Background(), values.Posts[values.CurrentPostIndex].Author.Id)
 		if err != nil {
 			log.Println("Couldn't get number of posts", err.Error())
 			return []byte{}
 		}
 		return []byte(strconv.FormatInt(count, 10))
 	} else if values.CurrentTemplate == 2 { // tag
-		count, err := database.RetrieveNumberOfPostsByTag(values.CurrentTag.Id)
+		count, err := store.DB.RetrieveNumberOfPostsByTag(context.Background(), values.CurrentTag.Id)
 		if err != nil {
 			log.Println("Couldn't get number of posts", err.Error())
 			return []byte{}
@@ -151,13 +152,13 @@ func nextFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	if values.CurrentTemplate == 0 { // index
 		count = values.Blog.PostCount
 	} else if values.CurrentTemplate == 2 { // tag
-		count, err = database.RetrieveNumberOfPostsByTag(values.CurrentTag.Id)
+		count, err = store.DB.RetrieveNumberOfPostsByTag(context.Background(), values.CurrentTag.Id)
 		if err != nil {
 			log.Println("Couldn't get number of posts for tag", err.Error())
 			return []byte{}
 		}
 	} else if values.CurrentTemplate == 3 { // author
-		count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		count, err = store.DB.RetrieveNumberOfPostsByUser(context.Background(), values.Posts[values.CurrentPostIndex].Author.Id)
 		if err != nil {
 			log.Println("Couldn't get number of posts for author", err.Error())
 			return []byte{}
@@ -180,13 +181,13 @@ func pagesFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	if values.CurrentTemplate == 0 { // index
 		count = values.Blog.PostCount
 	} else if values.CurrentTemplate == 2 { // tag
-		count, err = database.RetrieveNumberOfPostsByTag(values.CurrentTag.Id)
+		count, err = store.DB.RetrieveNumberOfPostsByTag(context.Background(), values.CurrentTag.Id)
 		if err != nil {
 			log.Println("Couldn't get number of posts for tag", err.Error())
 			return []byte{}
 		}
 	} else if values.CurrentTemplate == 3 { // author
-		count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		count, err = store.DB.RetrieveNumberOfPostsByUser(context.Background(), values.Posts[values.CurrentPostIndex].Author.Id)
 		if err != nil {
 			log.Println("Couldn't get number of posts for author", err.Error())
 			return []byte{}
@@ -241,13 +242,13 @@ func page_urlFunc(helper *structure.Helper, values *structure.RequestData) []byt
 			if values.CurrentTemplate == 0 { // index
 				count = values.Blog.PostCount
 			} else if values.CurrentTemplate == 2 { // tag
-				count, err = database.RetrieveNumberOfPostsByTag(values.CurrentTag.Id)
+				count, err = store.DB.RetrieveNumberOfPostsByTag(context.Background(), values.CurrentTag.Id)
 				if err != nil {
 					log.Println("Couldn't get number of posts for tag", err.Error())
 					return []byte{}
 				}
 			} else if values.CurrentTemplate == 3 { // author
-				count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+				count, err = store.DB.RetrieveNumberOfPostsByUser(context.Background(), values.Posts[values.CurrentPostIndex].Author.Id)
 				if err != nil {
 					log.Println("Couldn't get number of posts for author", err.Error())
 					return []byte{}
@@ -357,17 +358,17 @@ func meta_titleFunc(helper *structure.Helper, values *structure.RequestData) []b
 	} else if values.CurrentTemplate == 3 { // author
 		var buffer bytes.Buffer
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-		buffer.Write(values.Posts[values.CurrentPostIndex].Author.Name)
+		buffer.WriteString(values.Posts[values.CurrentPostIndex].Author.Name)
 		buffer.WriteString(" - ")
-		buffer.Write(values.Blog.Title)
-		return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+		buffer.WriteString(values.Blog.Title)
+		return evaluateEscape(buffer.String(), helper.Unescaped)
 	} else if values.CurrentTemplate == 2 { // tag
 		var buffer bytes.Buffer
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-		buffer.Write(values.CurrentTag.Name)
+		buffer.WriteString(values.CurrentTag.Name)
 		buffer.WriteString(" - ")
-		buffer.Write(values.Blog.Title)
-		return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+		buffer.WriteString(values.Blog.Title)
+		return evaluateEscape(buffer.String(), helper.Unescaped)
 	}
 	// index
 	return evaluateEscape(values.Blog.Title, helper.Unescaped)
@@ -549,7 +550,7 @@ func post_classFunc(helper *structure.Helper, values *structure.RequestData) []b
 		buffer.WriteString(" tag-")
 		buffer.WriteString(tag.Slug)
 	}
-	return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+	return evaluateEscape(buffer.String(), helper.Unescaped)
 }
 
 func urlFunc(helper *structure.Helper, values *structure.RequestData) []byte {
@@ -561,9 +562,9 @@ func urlFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 				if value == "true" {
 					// Only write the blog url if navigation url does not begin with http/https
 					if values.CurrentHelperContext == 4 && (!strings.HasPrefix(values.Blog.NavigationItems[values.CurrentNavigationIndex].Url, "http://") && !strings.HasPrefix(values.Blog.NavigationItems[values.CurrentNavigationIndex].Url, "https://")) { // navigation
-						buffer.Write(values.Blog.Url)
+						buffer.WriteString(values.Blog.Url)
 					} else if values.CurrentHelperContext != 4 {
-						buffer.Write(values.Blog.Url)
+						buffer.WriteString(values.Blog.Url)
 					}
 				}
 			}
@@ -573,16 +574,16 @@ func urlFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 		buffer.WriteString("/")
 		buffer.WriteString(values.Posts[values.CurrentPostIndex].Slug)
 		buffer.WriteString("/")
-		return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+		return evaluateEscape(buffer.String(), helper.Unescaped)
 	} else if values.CurrentHelperContext == 3 { // author
 		buffer.WriteString("/author/")
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
 		buffer.WriteString(values.Posts[values.CurrentPostIndex].Author.Slug)
 		buffer.WriteString("/")
-		return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+		return evaluateEscape(buffer.String(), helper.Unescaped)
 	} else if values.CurrentHelperContext == 4 { // navigation
 		buffer.WriteString(values.Blog.NavigationItems[values.CurrentNavigationIndex].Url)
-		return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+		return evaluateEscape(buffer.String(), helper.Unescaped)
 	}
 	return []byte{}
 }
@@ -659,10 +660,10 @@ func dateFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 		}
 	}
 	if showPublicationDate {
-		return evaluateEscape(date.FormatDate(timeFormat, values.Posts[values.CurrentPostIndex].Date), helper.Unescaped)
+		return evaluateEscape(string(date.FormatDate(timeFormat, values.Posts[values.CurrentPostIndex].Date)), helper.Unescaped)
 	}
 	currentDate := date.GetCurrentTime()
-	return evaluateEscape(date.FormatDate(timeFormat, &currentDate), helper.Unescaped)
+	return evaluateEscape(string(date.FormatDate(timeFormat, &currentDate)), helper.Unescaped)
 }
 
 func atFirstFunc(helper *structure.Helper, values *structure.RequestData) []byte {
@@ -743,7 +744,7 @@ func nameFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 		//buffer.WriteString("/\">")
 		//buffer.Write(evaluateEscape([]byte(values.Posts[values.CurrentPostIndex].Tags[values.CurrentTagIndex].Name), helper.Unescaped))
 		//buffer.WriteString("</a>")
-		//return buffer.Bytes()
+		//return buffer
 		return evaluateEscape(values.Posts[values.CurrentPostIndex].Tags[values.CurrentTagIndex].Name, helper.Unescaped)
 	}
 	// If author (commented out the code for generating a link. Ghost doesn't seem to do that).
@@ -754,7 +755,7 @@ func nameFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	//buffer.WriteString("\">")
 	//buffer.Write(evaluateEscape([]byte(values.Author.Name), helper.Unescaped))
 	//buffer.WriteString("</a>")
-	//return buffer.Bytes()
+	//return buffer
 	//TODO: Error handling if there is no Posts[values.CurrentPostIndex]
 	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Name, helper.Unescaped)
 }
@@ -769,9 +770,9 @@ func tagDotNameFunc(helper *structure.Helper, values *structure.RequestData) []b
 
 func tagDotSlugFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	if values.CurrentTag.Slug != "" {
-		return evaluateEscape([]byte(values.CurrentTag.Slug), helper.Unescaped)
+		return evaluateEscape(values.CurrentTag.Slug, helper.Unescaped)
 	} else {
-		return evaluateEscape([]byte(values.Posts[values.CurrentPostIndex].Tags[values.CurrentTagIndex].Slug), helper.Unescaped)
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Tags[values.CurrentTagIndex].Slug, helper.Unescaped)
 	}
 }
 
@@ -782,7 +783,7 @@ func idFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 func assetFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	if len(helper.Arguments) != 0 {
 		var buffer bytes.Buffer
-		buffer.Write(values.Blog.AssetPath)
+		buffer.WriteString(values.Blog.AssetPath)
 		buffer.WriteString(helper.Arguments[0].Name)
 		return buffer.Bytes()
 	}
@@ -857,9 +858,9 @@ func atBlogDotTitleFunc(helper *structure.Helper, values *structure.RequestData)
 
 func atBlogDotUrlFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	var buffer bytes.Buffer
-	buffer.Write(values.Blog.Url)
+	buffer.WriteString(values.Blog.Url)
 	buffer.WriteString("/")
-	return evaluateEscape(buffer.Bytes(), helper.Unescaped)
+	return evaluateEscape(buffer.String(), helper.Unescaped)
 }
 
 func atBlogDotLogoFunc(helper *structure.Helper, values *structure.RequestData) []byte {
@@ -874,11 +875,11 @@ func atBlogDotDescriptionFunc(helper *structure.Helper, values *structure.Reques
 	return evaluateEscape(values.Blog.Description, helper.Unescaped)
 }
 
-func evaluateEscape(value []byte, unescaped bool) []byte {
+func evaluateEscape(value string, unescaped bool) []byte {
 	if unescaped {
-		return value
+		return []byte(value)
 	}
-	return []byte(html.EscapeString(string(value)))
+	return []byte(html.EscapeString(value))
 }
 
 func positiveCeilingInt64(input float64) int64 {

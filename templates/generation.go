@@ -2,6 +2,7 @@ package templates
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -10,9 +11,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/helpers"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure"
 	"github.com/gaydin/journey/structure/methods"
 )
@@ -245,17 +246,18 @@ func compileTheme(themePath string) error {
 	return nil
 }
 
-func checkThemes() error {
+func checkThemes(ctx context.Context, db store.Database) error {
 	// Get currently set theme from database
-	activeTheme, err := database.RetrieveActiveTheme()
+	activeTheme, err := db.RetrieveActiveTheme(ctx)
 	if err != nil {
 		return err
 	}
-	currentThemePath := filepath.Join(filenames.ThemesFilepath, *activeTheme)
+	currentThemePath := filepath.Join(filenames.ThemesFilepath, activeTheme)
 	err = compileTheme(currentThemePath)
 	if err == nil {
 		return nil
 	}
+
 	// If the currently set theme couldnt be compiled, try the default theme (promenade)
 	err = compileTheme(filepath.Join(filenames.ThemesFilepath, "promenade"))
 	if err == nil {
@@ -282,13 +284,13 @@ func checkThemes() error {
 	return errors.New("Couldn't find a theme to use in " + filenames.ThemesFilepath)
 }
 
-func Generate() error {
+func Generate(ctx context.Context, db store.Database) error {
 	compiledTemplates.Lock()
 	defer compiledTemplates.Unlock()
 	// First clear compiledTemplates map (theme could have been changed)
 	compiledTemplates.m = make(map[string]*structure.Helper)
 	// Compile all template files
-	err := checkThemes()
+	err := checkThemes(ctx, db)
 	if err != nil {
 		return err
 	}

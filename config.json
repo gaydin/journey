@@ -8,5 +8,8 @@
 	"logger": {
 		"json": false,
 		"file_name": ""
+	},
+	"database": {
+		"DSN": "host=localhost port=5432 dbname=journey user=postgres password=postgres sslmode=disable"
 	}
 }

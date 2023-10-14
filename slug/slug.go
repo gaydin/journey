@@ -1,15 +1,16 @@
 package slug
 
 import (
+	"context"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/gaydin/journey/database"
+	"github.com/gaydin/journey/store"
 )
 
-func Generate(input string, table string) string {
+func Generate(ctx context.Context, db store.Database, input string, table string) string {
 	hyphensRegex := regexp.MustCompile("-+")
 	output := hyphensRegex.ReplaceAllString(strings.Map(func(r rune) rune {
 		switch {
@@ -36,14 +37,14 @@ func Generate(input string, table string) string {
 	}
 	// Don't allow a few specific slugs that are used by the blog
 	if table == "posts" && (output == "rss" || output == "tag" || output == "author" || output == "page" || output == "admin") {
-		output = generateUniqueSlug(output, table, 2)
+		output = generateUniqueSlug(ctx, db, output, table, 2)
 	} else if table == "tags" || table == "navigation" { // We want duplicate tag and navigation slugs
 		return output
 	}
-	return generateUniqueSlug(output, table, 1)
+	return generateUniqueSlug(ctx, db, output, table, 1)
 }
 
-func generateUniqueSlug(slug string, table string, suffix int) string {
+func generateUniqueSlug(ctx context.Context, db store.Database, slug string, table string, suffix int) string {
 	// Recursive function
 	slugToCheck := slug
 	if suffix > 1 { // If this is not the first try, add the suffix and try again
@@ -51,14 +52,14 @@ func generateUniqueSlug(slug string, table string, suffix int) string {
 	}
 	var err error
 	if table == "tags" { // Not needed at the moment. Tags with the same name should have the same slug.
-		_, err = database.RetrieveTagIdBySlug(slugToCheck)
+		_, err = db.RetrieveTagIDBySlug(ctx, slugToCheck)
 	} else if table == "posts" {
-		_, err = database.RetrievePostBySlug(slugToCheck)
+		_, err = db.RetrievePostBySlug(ctx, slugToCheck)
 	} else if table == "users" {
-		_, err = database.RetrieveUserBySlug(slugToCheck)
+		_, err = db.RetrieveUserBySlug(ctx, slugToCheck)
 	}
 	if err == nil {
-		return generateUniqueSlug(slug, table, suffix+1)
+		return generateUniqueSlug(ctx, db, slug, table, suffix+1)
 	}
 	return slugToCheck
 }

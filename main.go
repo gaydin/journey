@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -8,11 +9,11 @@ import (
 	"log/slog"
 
 	"github.com/gaydin/journey/configuration"
-	"github.com/gaydin/journey/database"
 	"github.com/gaydin/journey/flags"
 	"github.com/gaydin/journey/https"
 	"github.com/gaydin/journey/logger"
 	"github.com/gaydin/journey/server"
+	"github.com/gaydin/journey/store"
 	"github.com/gaydin/journey/structure/methods"
 	"github.com/gaydin/journey/templates"
 )
@@ -34,19 +35,20 @@ func main() {
 	}()
 
 	// Database
-	if err := database.Initialize(); err != nil {
+	db, err := store.New(config)
+	if err != nil {
 		log.Error("Couldn't initialize database", logger.Error(err))
 		return
 	}
 
 	// Global blog data
-	if err := methods.GenerateBlog(); err != nil {
+	if err := methods.GenerateBlog(context.Background()); err != nil {
 		log.Error("Couldn't generate blog data", logger.Error(err))
 		return
 	}
 
 	// Templates
-	if err := templates.Generate(); err != nil {
+	if err := templates.Generate(context.Background(), db); err != nil {
 		log.Error("Couldn't compile templates", logger.Error(err))
 		return
 	}
@@ -69,7 +71,7 @@ func main() {
 		httpsRouter := httptreemux.New()
 		httpRouter := httptreemux.New()
 		// Blog and pages as https
-		server.InitializeBlog(httpsRouter)
+		server.InitializeBlog(httpsRouter, db)
 		server.InitializePages(httpsRouter)
 		// Add redirection to http router
 		httpRouter.GET("/", httpsRedirect)
@@ -90,7 +92,7 @@ func main() {
 	} else {
 		httpRouter := httptreemux.New()
 		// Blog and pages as http
-		server.InitializeBlog(httpRouter)
+		server.InitializeBlog(httpRouter, db)
 		server.InitializePages(httpRouter)
 		// Start http server
 		log.Info("Starting http server on port " + httpPort + "...")

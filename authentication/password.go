@@ -1,13 +1,15 @@
 package authentication
 
 import (
+	"context"
+
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/gaydin/journey/database"
+	"github.com/gaydin/journey/store"
 )
 
 func LoginIsCorrect(name string, password string) bool {
-	hashedPassword, err := database.RetrieveHashedPasswordForUser([]byte(name))
+	hashedPassword, err := store.DB.RetrieveHashedPasswordForUser(context.Background(), name)
 	if len(hashedPassword) == 0 || err != nil { // len(hashedPassword) == 0 probably not needed.
 		// User name likely doesn't exist
 		return false
