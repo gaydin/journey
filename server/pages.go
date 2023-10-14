@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dimfeld/httptreemux"
+	"github.com/dimfeld/httptreemux/v5"
 
 	"github.com/gaydin/journey/filenames"
 	"github.com/gaydin/journey/helpers"
