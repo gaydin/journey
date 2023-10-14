@@ -1,7 +1,7 @@
 package slug
 
 import (
-	"github.com/kabukky/journey/database"
+	"github.com/gaydin/journey/database"
 	"regexp"
 	"strconv"
 	"strings"

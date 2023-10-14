@@ -2,11 +2,11 @@ package templates
 
 import (
 	"bytes"
+	"github.com/gaydin/journey/database"
+	"github.com/gaydin/journey/date"
+	"github.com/gaydin/journey/structure"
+	"github.com/gaydin/journey/structure/methods"
 	"github.com/kabukky/feeds"
-	"github.com/kabukky/journey/database"
-	"github.com/kabukky/journey/date"
-	"github.com/kabukky/journey/structure"
-	"github.com/kabukky/journey/structure/methods"
 	"net/http"
 )
 

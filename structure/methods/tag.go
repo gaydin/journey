@@ -1,8 +1,8 @@
 package methods
 
 import (
-	"github.com/kabukky/journey/slug"
-	"github.com/kabukky/journey/structure"
+	"github.com/gaydin/journey/slug"
+	"github.com/gaydin/journey/structure"
 	"strings"
 )
 

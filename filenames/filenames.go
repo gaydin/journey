@@ -1,7 +1,7 @@
 package filenames
 
 import (
-	"github.com/kabukky/journey/flags"
+	"github.com/gaydin/journey/flags"
 	"github.com/kardianos/osext"
 	"log"
 	"os"
