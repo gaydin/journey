@@ -75,14 +75,14 @@ func main() {
 		// Blog and pages as https
 		server.InitializeBlog(httpsRouter, db)
 		server.InitializePages(httpsRouter)
-		admin.InitializeAdmin(config, db, httpRouter)
+		admin.InitializeAdmin(config, db, httpsRouter)
 		// Add redirection to http router
 		httpRouter.GET("/", newHttpRedirect(config.HttpsUrl))
 		httpRouter.GET("/*path", newHttpRedirect(config.HttpsUrl))
 		// Start https server
 		log.Info("Starting https server on port " + httpsPort + "...")
 		go func() {
-			if err := https.StartServer(httpsPort, httpsRouter); err != nil {
+			if err := https.StartServer(httpsPort, logger.Middleware(httpsRouter, log)); err != nil {
 				log.Error("Couldn't start the HTTPS server", logger.Error(err))
 				return
 			}
