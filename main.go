@@ -8,6 +8,7 @@ import (
 	"github.com/dimfeld/httptreemux/v5"
 	"log/slog"
 
+	"github.com/gaydin/journey/admin"
 	"github.com/gaydin/journey/configuration"
 	"github.com/gaydin/journey/flags"
 	"github.com/gaydin/journey/https"
@@ -18,9 +19,10 @@ import (
 	"github.com/gaydin/journey/templates"
 )
 
-func httpsRedirect(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-	http.Redirect(w, r, configuration.Config.HttpsUrl+r.RequestURI, http.StatusMovedPermanently)
-	return
+func newHttpRedirect(httpsURL string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, httpsURL+r.RequestURI, http.StatusMovedPermanently)
+	}
 }
 
 func main() {
@@ -42,7 +44,7 @@ func main() {
 	}
 
 	// Global blog data
-	if err := methods.GenerateBlog(context.Background()); err != nil {
+	if err := methods.GenerateBlog(context.Background(), config.Url, db); err != nil {
 		log.Error("Couldn't generate blog data", logger.Error(err))
 		return
 	}
@@ -68,14 +70,15 @@ func main() {
 
 	// Determine the kind of https support (as set in the config.json)
 	if configuration.Config.HttpsUsage {
-		httpsRouter := httptreemux.New()
-		httpRouter := httptreemux.New()
+		httpsRouter := httptreemux.NewContextMux()
+		httpRouter := httptreemux.NewContextMux()
 		// Blog and pages as https
 		server.InitializeBlog(httpsRouter, db)
 		server.InitializePages(httpsRouter)
+		admin.InitializeAdmin(config, db, httpRouter)
 		// Add redirection to http router
-		httpRouter.GET("/", httpsRedirect)
-		httpRouter.GET("/*path", httpsRedirect)
+		httpRouter.GET("/", newHttpRedirect(config.HttpsUrl))
+		httpRouter.GET("/*path", newHttpRedirect(config.HttpsUrl))
 		// Start https server
 		log.Info("Starting https server on port " + httpsPort + "...")
 		go func() {
@@ -90,10 +93,12 @@ func main() {
 			log.Error("Couldn't start the HTTP server:", logger.Error(err))
 		}
 	} else {
-		httpRouter := httptreemux.New()
+		httpRouter := httptreemux.NewContextMux()
 		// Blog and pages as http
 		server.InitializeBlog(httpRouter, db)
 		server.InitializePages(httpRouter)
+		admin.InitializeAdmin(config, db, httpRouter)
+
 		// Start http server
 		log.Info("Starting http server on port " + httpPort + "...")
 		if err := http.ListenAndServe(httpPort, logger.Middleware(httpRouter, log)); err != nil {

@@ -8,8 +8,8 @@ import (
 	"github.com/gaydin/journey/store"
 )
 
-func LoginIsCorrect(name string, password string) bool {
-	hashedPassword, err := store.DB.RetrieveHashedPasswordForUser(context.Background(), name)
+func LoginIsCorrect(ctx context.Context, db store.Database, name string, password string) bool {
+	hashedPassword, err := db.RetrieveHashedPasswordForUser(ctx, name)
 	if len(hashedPassword) == 0 || err != nil { // len(hashedPassword) == 0 probably not needed.
 		// User name likely doesn't exist
 		return false

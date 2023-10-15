@@ -1,0 +1,496 @@
+openapi: 3.0.2
+servers:
+  - url: /v1
+info:
+  version: 1.0.0
+  title: Admin space API
+tags:
+  - name: admin
+paths:
+  /admin/v1/api/auth/login:
+    post:
+      security: [ ]
+      requestBody:
+        description: auth
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParamsAuthLogin'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              description: >
+                Contains the session cookie named `COOKIE-NAME`.
+                Pass this cookie back in subsequent requests.
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/auth/logout:
+    post:
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              description: >
+                Contains the session cookie named `COOKIE-NAME`.
+                Pass this cookie back in subsequent requests.
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/auth/registration:
+    post:
+      security: [ ]
+      requestBody:
+        description: auth
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParamsAuthRegistration'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              description: >
+                Contains the session cookie named `COOKIE-NAME`.
+                Pass this cookie back in subsequent requests.
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/posts/{number}:
+    get:
+      parameters:
+        - name: number
+          in: path
+          description: page number
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/post/{postId}:
+    delete:
+      parameters:
+        - name: postId
+          in: path
+          description: ID of post to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+    get:
+      parameters:
+        - name: postId
+          in: path
+          description: ID of post to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/post:
+    post:
+      requestBody:
+        description: Create a new post
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+    patch:
+      requestBody:
+        description: Create a new post
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+  /admin/v1/api/upload:
+    post:
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                multiplefiles:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+  /admin/v1/api/images/{number}:
+    get:
+      parameters:
+        - name: number
+          in: path
+          description: page number
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+  /admin/v1/api/image:
+    delete:
+      requestBody:
+        description: Create a new post
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - Filename
+              type: object
+              properties:
+                Filename:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/blog:
+    get:
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blog'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+    patch:
+      requestBody:
+        description: Create a new post
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Blog'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/user/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/user:
+    get:
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+    patch:
+      requestBody:
+        description: update user
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            Set-Cookie:
+              description: >
+                Contains the session cookie named `COOKIE-NAME`.
+                Pass this cookie back in subsequent requests.
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /admin/v1/api/userid:
+    get:
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Id:
+                    type: integer
+                    format: int64
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/Default'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error_message:
+          type: string
+
+    Blog:
+      type: object
+      properties:
+        Url:
+          type: string
+        Title:
+          type: string
+        Description:
+          type: string
+        Logo:
+          type: string
+        Cover:
+          type: string
+        Themes:
+          type: array
+          items:
+            type: string
+        ActiveTheme:
+          type: string
+        PostsPerPage:
+          type: integer
+          format: int64
+        NavigationItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/Navigation'
+
+    Navigation:
+      type: object
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+
+    Post:
+      type: object
+      required:
+        - name
+      properties:
+        Id:
+          type: integer
+          format: int64
+        Title:
+          type: string
+        Slug:
+          type: string
+        Markdown:
+          type: string
+        HTML:
+          type: string
+        IsFeatured:
+          type: boolean
+        IsPage:
+          type: boolean
+        IsPublished:
+          type: boolean
+        Image:
+          type: string
+        MetaDescription:
+          type: string
+        Date:
+          type: string
+          format: date
+        Tags:
+          type: string
+
+    User:
+      type: object
+      properties:
+        Id:
+          type: integer
+          format: int64
+        Name:
+          type: string
+        Slug:
+          type: string
+        Email:
+          type: string
+        Image:
+          type: string
+        Cover:
+          type: string
+        Bio:
+          type: string
+        Website:
+          type: string
+        Location:
+          type: string
+        Password:
+          type: string
+        PasswordRepeated:
+          type: string
+
+    ParamsAuthLogin:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+
+    ParamsAuthRegistration:
+      type: object
+      required:
+        - login
+        - email
+        - password
+      properties:
+        login:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication information is missing or invalid
+
+    Default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+security:
+  - cookieAuth: [ ]

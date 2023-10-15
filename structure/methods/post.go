@@ -9,7 +9,7 @@ import (
 	"github.com/gaydin/journey/structure"
 )
 
-func SavePost(ctx context.Context, db store.Database, p *structure.Post) error {
+func SavePost(ctx context.Context, blogURL string, db store.Database, p *structure.Post) error {
 	tagIds := make([]int64, 0)
 	// Insert tags
 	for _, tag := range p.Tags {
@@ -27,34 +27,34 @@ func SavePost(ctx context.Context, db store.Database, p *structure.Post) error {
 		}
 	}
 	// Insert post
-	postId, err := store.DB.InsertPost(context.Background(), p.Title, p.Slug, p.Markdown, p.Html, p.IsFeatured, p.IsPage, p.IsPublished, p.MetaDescription, p.Image, *p.Date, p.Author.Id)
+	postId, err := db.InsertPost(ctx, p.Title, p.Slug, p.Markdown, p.Html, p.IsFeatured, p.IsPage, p.IsPublished, p.MetaDescription, p.Image, *p.Date, p.Author.Id)
 	if err != nil {
 		return err
 	}
 	// Insert postTags
 	for _, tagId := range tagIds {
-		err = store.DB.InsertPostTag(context.Background(), postId, tagId)
+		err = db.InsertPostTag(ctx, postId, tagId)
 		if err != nil {
 			return err
 		}
 	}
 	// Generate new global blog
-	err = GenerateBlog(context.Background())
+	err = GenerateBlog(ctx, blogURL, db)
 	if err != nil {
 		log.Panic("Error: couldn't generate blog data:", err)
 	}
 	return nil
 }
 
-func UpdatePost(p *structure.Post) error {
+func UpdatePost(ctx context.Context, blogURL string, db store.Database, p *structure.Post) error {
 	tagIds := make([]int64, 0)
 	// Insert tags
 	for _, tag := range p.Tags {
 		// Tag slug might already be in database
-		tagId, err := store.DB.RetrieveTagIDBySlug(context.Background(), tag.Slug)
+		tagId, err := db.RetrieveTagIDBySlug(ctx, tag.Slug)
 		if err != nil {
 			// Tag is probably not in database yet
-			tagId, err = store.DB.InsertTag(context.Background(), tag.Name, tag.Slug, date.GetCurrentTime(), p.Author.Id)
+			tagId, err = db.InsertTag(ctx, tag.Name, tag.Slug, date.GetCurrentTime(), p.Author.Id)
 			if err != nil {
 				return err
 			}
@@ -64,37 +64,37 @@ func UpdatePost(p *structure.Post) error {
 		}
 	}
 	// Update post
-	err := store.DB.UpdatePost(context.Background(), p.Id, p.Title, p.Slug, p.Markdown, p.Html, p.IsFeatured, p.IsPage, p.IsPublished, p.MetaDescription, p.Image, *p.Date, p.Author.Id)
+	err := db.UpdatePost(ctx, p.Id, p.Title, p.Slug, p.Markdown, p.Html, p.IsFeatured, p.IsPage, p.IsPublished, p.MetaDescription, p.Image, *p.Date, p.Author.Id)
 	if err != nil {
 		return err
 	}
 	// Delete old postTags
-	err = store.DB.DeletePostTagsForPostID(context.Background(), p.Id)
+	err = db.DeletePostTagsForPostID(ctx, p.Id)
 	// Insert postTags
 	if err != nil {
 		return err
 	}
 	for _, tagId := range tagIds {
-		err = store.DB.InsertPostTag(context.Background(), p.Id, tagId)
+		err = db.InsertPostTag(ctx, p.Id, tagId)
 		if err != nil {
 			return err
 		}
 	}
 	// Generate new global blog
-	err = GenerateBlog(context.Background())
+	err = GenerateBlog(ctx, blogURL, db)
 	if err != nil {
 		log.Panic("Error: couldn't generate blog data:", err)
 	}
 	return nil
 }
 
-func DeletePost(postId int64) error {
-	err := store.DB.DeletePostByID(context.Background(), postId)
+func DeletePost(ctx context.Context, blogURL string, db store.Database, postId int64) error {
+	err := db.DeletePostByID(ctx, postId)
 	if err != nil {
 		return err
 	}
 	// Generate new global blog
-	err = GenerateBlog(context.Background())
+	err = GenerateBlog(ctx, blogURL, db)
 	if err != nil {
 		log.Panic("Error: couldn't generate blog data:", err)
 	}

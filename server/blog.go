@@ -14,8 +14,8 @@ import (
 	"github.com/gaydin/journey/templates"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	number := params["number"]
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	number := httptreemux.ContextParams(r.Context())["number"]
 	if number == "" {
 		// Render index template (first page)
 		err := templates.ShowIndexTemplate(r.Context(), store.DB, w, r, 1)
@@ -39,10 +39,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request, params map[string]stri
 	return
 }
 
-func authorHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	slug := params["slug"]
-	function := params["function"]
-	number := params["number"]
+func authorHandler(w http.ResponseWriter, r *http.Request) {
+	slug := httptreemux.ContextParams(r.Context())["slug"]
+	function := httptreemux.ContextParams(r.Context())["function"]
+	number := httptreemux.ContextParams(r.Context())["number"]
 	if function == "" {
 		// Render author template (first page)
 		err := templates.ShowAuthorTemplate(r.Context(), store.DB, w, r, slug, 1)
@@ -74,10 +74,10 @@ func authorHandler(w http.ResponseWriter, r *http.Request, params map[string]str
 	return
 }
 
-func tagHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	slug := params["slug"]
-	function := params["function"]
-	number := params["number"]
+func tagHandler(w http.ResponseWriter, r *http.Request) {
+	slug := httptreemux.ContextParams(r.Context())["slug"]
+	function := httptreemux.ContextParams(r.Context())["function"]
+	number := httptreemux.ContextParams(r.Context())["number"]
 	if function == "" {
 		// Render tag template (first page)
 		err := templates.ShowTagTemplate(r.Context(), store.DB, w, r, slug, 1)
@@ -109,8 +109,8 @@ func tagHandler(w http.ResponseWriter, r *http.Request, params map[string]string
 	return
 }
 
-func postHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	slug := params["slug"]
+func postHandler(w http.ResponseWriter, r *http.Request) {
+	slug := httptreemux.ContextParams(r.Context())["slug"]
 	if slug == "" {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -133,9 +133,9 @@ func postHandler(w http.ResponseWriter, r *http.Request, params map[string]strin
 	return
 }
 
-func newPostEditHandler(db store.Database) httptreemux.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-		slug := params["slug"]
+func newPostEditHandler(db store.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slug := httptreemux.ContextParams(r.Context())["slug"]
 		if slug == "" {
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
@@ -153,25 +153,25 @@ func newPostEditHandler(db store.Database) httptreemux.HandlerFunc {
 	}
 }
 
-func assetsHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
+func assetsHandler(w http.ResponseWriter, r *http.Request) {
 	// Read lock global blog
 	methods.Blog.RLock()
 	defer methods.Blog.RUnlock()
-	http.ServeFile(w, r, filepath.Join(filenames.ThemesFilepath, methods.Blog.ActiveTheme, "assets", params["filepath"]))
+	http.ServeFile(w, r, filepath.Join(filenames.ThemesFilepath, methods.Blog.ActiveTheme, "assets", httptreemux.ContextParams(r.Context())["filepath"]))
 	return
 }
 
-func imagesHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	http.ServeFile(w, r, filepath.Join(filenames.ImagesFilepath, params["filepath"]))
+func imagesHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, filepath.Join(filenames.ImagesFilepath, httptreemux.ContextParams(r.Context())["filepath"]))
 	return
 }
 
-func publicHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
-	http.ServeFile(w, r, filepath.Join(filenames.PublicFilepath, params["filepath"]))
+func publicHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, filepath.Join(filenames.PublicFilepath, httptreemux.ContextParams(r.Context())["filepath"]))
 	return
 }
 
-func InitializeBlog(router *httptreemux.TreeMux, db store.Database) {
+func InitializeBlog(router *httptreemux.ContextMux, db store.Database) {
 	// For index
 	router.GET("/", indexHandler)
 	router.GET("/:slug/edit", newPostEditHandler(db))
